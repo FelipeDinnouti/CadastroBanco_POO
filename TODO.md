@@ -1,0 +1,1 @@
+I've already implemented basically all of the frontend code, now what's left is implement the backend (actually saving the objects to the ArrayList in AccountStore)
