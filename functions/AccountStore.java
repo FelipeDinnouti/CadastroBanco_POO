@@ -9,18 +9,17 @@ import java.util.ArrayList;
 import objects.*;
 
 public class AccountStore {
-    ArrayList<CheckingAccount> checking_accounts;
-    ArrayList<SavingsAccount> savings_accounts;
+    static ArrayList<BankAccount> accounts = new ArrayList<BankAccount>();
 
-    public static void StoreAccount(CheckingAccount ca) {
-
+    public static void StoreAccount(CheckingAccount ca) throws UnexpectedException {
+        throw new UnexpectedException("Trying to save a checking bank account. Can only save as a generic bank account.");
     }
 
-    public static void StoreAccount(SavingsAccount sa) {
-
+    public static void StoreAccount(SavingsAccount sa) throws UnexpectedException {
+        throw new UnexpectedException("Trying to save a savings bank account. Can only save as a generic bank account.");
     }
 
-    public static void StoreAccount(BankAccount ba) throws UnexpectedException {
-        throw new UnexpectedException("Trying to create a generic bank account. Can only create either savings or checking account.");
+    public static void StoreAccount(BankAccount ba) {
+        accounts.add(ba);
     }
 }
