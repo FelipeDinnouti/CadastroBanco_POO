@@ -7,31 +7,31 @@ public class Person {
     String phone;
     String cpf;
 
-    String getName() {
+    public String getName() {
         return this.name;
     }
-    void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
-    String getAddress() {
+    public String getAddress() {
         return this.address;
     }
-    void setAddress(String address){
+    public void setAddress(String address){
         this.address = address;
     }
 
-    String getPhone() {
+    public String getPhone() {
         return this.phone;
     }
-    void setPhone(String phone) {
+    public void setPhone(String phone) {
         this.phone = phone;
     }
 
-    String getCpf() {
+    public String getCpf() {
         return this.cpf;
     }  
-    void setCpf(String cpf) {
+    public void setCpf(String cpf) {
         this.cpf = cpf;
     }
 }

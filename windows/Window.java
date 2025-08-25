@@ -3,12 +3,16 @@ package windows;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.MaskFormatter;
 
 import functions.AccountManager;
+import objects.BankAccount;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.text.ParseException;
 
 public class Window extends JFrame {
     AccountManager account_manager = new AccountManager();
@@ -28,10 +32,10 @@ public class Window extends JFrame {
     JTextField jtf_address = new JTextField();
 
     JLabel jl_phone = new JLabel("Telefone: ");
-    JTextField jtf_phone = new JTextField();
+    JFormattedTextField jtf_phone;
 
     JLabel jl_cpf = new JLabel("CPF: ");
-    JTextField jtf_cpf = new JTextField();
+    JFormattedTextField jtf_cpf;
 
     JRadioButton jrb_checking_account = new JRadioButton("Conta Corrente");
     JRadioButton jrb_savings_account = new JRadioButton("Conta Poupança");
@@ -43,6 +47,9 @@ public class Window extends JFrame {
     JButton jb_update = new JButton("Atualizar");
     JButton jb_create = new JButton("Criar");
 
+    MaskFormatter phone_formatter;
+    MaskFormatter cpf_formatter;
+
     // Constructor method
     Window() {
         super("Java Swing - Desenvolvimento de Sistemas");
@@ -51,20 +58,35 @@ public class Window extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         getContentPane().setLayout(null);
 
-        // Add listeners
+        // Creating the formatters and checking for errors 
+        try {
+            phone_formatter = new MaskFormatter(" (##) #####-####"); 
+            phone_formatter.setPlaceholderCharacter('_');
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        try {
+            cpf_formatter = new MaskFormatter(" ###.###.###-##"); 
+            cpf_formatter.setPlaceholderCharacter('_');
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        // Initialize formatted text fields with their respective formatters
+        jtf_phone = new JFormattedTextField(phone_formatter);
+        jtf_cpf = new JFormattedTextField(cpf_formatter);
+
+        // Add listeners    
         ActionListener form_update_listener = e -> {
-            System.out.println("Update");
             updateButtons();
         };  
         DocumentListener text_field_update_listener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                System.out.println("Update Text");
                 updateButtons();
             }
             @Override
             public void removeUpdate(DocumentEvent e) {
-                System.out.println("Update Text");
                 updateButtons();
             }
             @Override
@@ -125,6 +147,8 @@ public class Window extends JFrame {
         jb_create.setBounds(255,190,100,23);
         jb_create.setMnemonic(KeyEvent.VK_C);
 
+        // Adding action listeners as callbacks to events
+
         jtf_agency.getDocument().addDocumentListener(text_field_update_listener);
         jtf_account.getDocument().addDocumentListener(text_field_update_listener);
         jtf_name.getDocument().addDocumentListener(text_field_update_listener);
@@ -133,6 +157,25 @@ public class Window extends JFrame {
         jtf_cpf.getDocument().addDocumentListener(text_field_update_listener);
         jrb_checking_account.addActionListener(form_update_listener);
         jrb_savings_account.addActionListener(form_update_listener);
+
+        jb_create.addActionListener(new ActionListener() { 
+            @Override
+            public void actionPerformed(ActionEvent e) { 
+                createAccount();
+            } 
+        });
+        jb_consult.addActionListener(new ActionListener() { 
+            @Override
+            public void actionPerformed(ActionEvent e) { 
+                queryAccount();
+            }   
+        });
+        jb_update.addActionListener(new ActionListener() { 
+            @Override
+            public void actionPerformed(ActionEvent e) { 
+                updateAccount();
+            } 
+        });
 
         getContentPane().add(jl_agency);
         getContentPane().add(jtf_agency);
@@ -165,30 +208,54 @@ public class Window extends JFrame {
     }
 
     private void updateButtons() {
-        int agency = Integer.parseInt(jtf_agency.getText());
-        int account_number = Integer.parseInt(jtf_account.getText());
+        int agency;
+        int account_number;
+
+        
+        
+        try {
+            agency = Integer.parseInt(jtf_agency.getText());
+            account_number = Integer.parseInt(jtf_account.getText());
+        } catch (Exception e) {
+            return;
+        }
 
         // Query if the account exists
         boolean account_exists = account_manager.queryAccount(agency, account_number);
 
-        if (account_exists) {
+        if (!account_exists) {
             jb_create.setEnabled(true);
             jb_update.setEnabled(false);
-        } else {
-            jb_create.setEnabled(false);
-            jb_update.setEnabled(true);
+        
+            return;
         }
-
+        
+        // Account does exists
+        jb_create.setEnabled(false);
+        jb_update.setEnabled(true); 
     }
 
     private void createAccount() {
-        int agency = Integer.parseInt(jtf_agency.getText());
-        int account_number = Integer.parseInt(jtf_account.getText());
+        int agency;
+        int account_number;
 
-        String name = jtf_name.getText();
-        String phone = jtf_phone.getText();
-        String address = jtf_address.getText();
-        String cpf = jtf_address.getText();
+        String name;
+        String phone;
+        String address;
+        String cpf;
+
+        try {
+            agency = Integer.parseInt(jtf_agency.getText());
+            account_number = Integer.parseInt(jtf_account.getText());
+
+            name = jtf_name.getText();
+            phone = jtf_phone.getText();
+            address = jtf_address.getText();
+            cpf = jtf_cpf.getText();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields properly.", "Innapropriate Fields", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         AccountManager.AccountType account_type;
         if (jrb_checking_account.isSelected()) {
@@ -198,16 +265,39 @@ public class Window extends JFrame {
         }
 
         account_manager.createAccount(agency, account_number, name, address, phone, cpf, account_type);
+        updateButtons();
+
+        JOptionPane.showMessageDialog(this, "Agência: " + agency + 
+                                            " - Número da conta: " + account_number + 
+                                            "\nNome: " + name +
+                                            "\nEndereço: " + address +
+                                            "\nTelefone: " + phone +
+                                            "\nCPF: " + cpf,
+                                            "Conta criada com sucesso!", JOptionPane.INFORMATION_MESSAGE);
+
     }
 
     private void updateAccount() {
-        int agency = Integer.parseInt(jtf_agency.getText());
-        int account_number = Integer.parseInt(jtf_account.getText());
+        int agency;
+        int account_number;
 
-        String name = jtf_name.getText();
-        String phone = jtf_phone.getText();
-        String address = jtf_address.getText();
-        String cpf = jtf_address.getText();
+        String name;
+        String phone;
+        String address;
+        String cpf;
+
+        try {
+            agency = Integer.parseInt(jtf_agency.getText());
+            account_number = Integer.parseInt(jtf_account.getText());
+
+            name = jtf_name.getText();
+            phone = jtf_phone.getText();
+            address = jtf_address.getText();
+            cpf = jtf_cpf.getText();
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Please fill all fields properly.", "Innapropriate Fields", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
 
         AccountManager.AccountType account_type;
         if (jrb_checking_account.isSelected()) {
@@ -221,6 +311,34 @@ public class Window extends JFrame {
 
     private void queryAccount() {
         // Check if the account exists
+        int agency;
+        int account_number;
+        
+        try {
+            agency = Integer.parseInt(jtf_agency.getText());
+            account_number = Integer.parseInt(jtf_account.getText());
+        } catch (Exception e) {
+            return;
+        }
+
+        
+
+        // Query if the account exists
+        boolean account_exists = account_manager.queryAccount(agency, account_number);
+
+        if (!account_exists) {
+            JOptionPane.showMessageDialog(this, "Conta inexistente.", "Error", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        BankAccount acc = account_manager.getAccount(agency, account_number);
+
+        // Auto fill fields
+        jtf_name.setText(acc.getName());
+        jtf_address.setText(acc.getAddress());
+        jtf_phone.setText(acc.getPhone());
+        jtf_cpf.setText(acc.getCpf());
+
     }
 
     private void centralize() {
