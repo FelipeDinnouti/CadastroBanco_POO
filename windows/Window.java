@@ -295,7 +295,7 @@ public class Window extends JFrame {
             address = jtf_address.getText();
             cpf = jtf_cpf.getText();
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Please fill all fields properly.", "Innapropriate Fields", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Preencha todos os campos corretamente", "Campos incorretos", JOptionPane.WARNING_MESSAGE);
             return;
         }
 
